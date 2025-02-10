@@ -14,9 +14,9 @@ class CitationApiTest extends KernelTestCase
     {
         self::bootKernel(); // Démarre le noyau Symfony
 
-        $httpClient = static::getContainer()->get(HttpClientInterface::class); // Récupère le service HttpClient
+        $httpClient = static::getContainer()->get(HttpClientInterface::class);
 
-        $this->citationApi = new CitationApi($httpClient, 'http://127.0.0.1:8000'); // Instance réelle
+        $this->citationApi = new CitationApi($httpClient, $_ENV['API_BASE_URL']);
     }
 
     public function testGetCitationsReturnsValidResponse()
