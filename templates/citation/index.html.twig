@@ -1,15 +1,25 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello CitationController!{% endblock %}
+{% block title %}Citation du Jour{% endblock %}
 
 {% block body %}
+    <div class="container d-flex flex-column align-items-center justify-content-center vh-100">
+        <div class="card shadow-lg p-4 text-center citation-card">
+            <h2 class="mb-4 text-primary">📖 Citation du Jour</h2>
 
-<div class="example-wrapper">
-    <h1>Citation aléatoire :</h1>
+            <blockquote class="blockquote">
+                <p class="mb-3 text-dark fs-4 fst-italic">"{{ citation.getText() }}"</p>
+            </blockquote>
 
-    <span>
-        {{ citation.getText() }} <br>
-        {{ citation.getBook().getTitle() }}, {{ citation.getAuthor().getName() }}
-    </span>
-</div>
+            <footer class="blockquote-footer">
+                <span class="fw-bold">{{ citation.getAuthor().getName() }}</span>
+                <br>
+                <span class="text-muted">📚 {{ citation.getBook().getTitle() }}</span>
+            </footer>
+
+            <div class="mt-4">
+                <a href="{{ path('random_citation') }}" class="btn btn-primary">🔄 Nouvelle citation</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
