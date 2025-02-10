@@ -52,9 +52,17 @@ final class CitationController extends AbstractController
         ]);
     }
 
-    #[Route('/random', name: 'random_citation')]
-    public function random(): Response
+    #[Route('/random-citation', name: 'random_citation')]
+    public function getRandomCitation(): JsonResponse
     {
-        return $this->redirectToRoute('app_citation'); // Recharge la page pour afficher une nouvelle citation
+        // Appel API pour récupérer une citation aléatoire
+        $citation = $this->citationApi->getRandomCitation();
+
+        // Renvoi de la citation sous forme JSON
+        return new JsonResponse([
+            'text' => $citation->getText(),
+            'author' => $citation->getAuthor()->getName(),
+            'book' => $citation->getBook()->getTitle()
+        ]);
     }
 }

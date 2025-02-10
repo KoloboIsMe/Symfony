@@ -8,31 +8,34 @@
             <h2 class="mb-4 text-primary">📖 Citation du Jour</h2>
 
             <blockquote class="blockquote">
-                <p class="mb-3 text-dark fs-4 fst-italic">"{{ citation.getText() }}"</p>
+                <p id="citation-text" class="mb-3 text-dark fs-4 fst-italic">"{{ citation.getText() }}"</p>
             </blockquote>
 
             <footer class="blockquote-footer">
-                <span class="fw-bold">{{ citation.getAuthor().getName() }}</span>
+                <span id="citation-author" class="fw-bold">{{ citation.getAuthor().getName() }}</span>
                 <br>
-                <span class="text-muted">📚 {{ citation.getBook().getTitle() }}</span>
+                <span id="citation-book" class="text-muted">📚 {{ citation.getBook().getTitle() }}</span>
             </footer>
 
             <div class="mt-4">
-                <a href="{{ path('random_citation') }}" class="btn btn-primary">🔄 Nouvelle citation</a>
+                <button id="reload-citation" class="btn btn-primary">
+                    <span id="reload-spinner" class="spinner-border spinner-border-sm text-light d-none"></span>
+                    🔄 Nouvelle citation
+                </button>
             </div>
 
             {% if app.user %}
                 <div class="mt-4">
-                    <button id="explain-btn" class="btn btn-info">💡 Expliquer par l'IA</button>
+                    <button id="explain-btn" class="btn btn-info">
+                        <span id="explain-spinner" class="spinner-border spinner-border-sm text-light d-none"></span>
+                        💡 Expliquer par l'IA
+                    </button>
                 </div>
             {% endif %}
         </div>
 
         {% if app.user %}
             <div id="explanation-container" class="mt-4 p-3 w-75 text-center border rounded bg-light d-none">
-                <div id="loading" class="d-none">
-                    <span class="spinner-border spinner-border-sm text-primary"></span> Analyse en cours...
-                </div>
                 <p id="explanation-text" class="text-dark mt-3"></p>
             </div>
         {% endif %}
@@ -50,15 +53,49 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const explainBtn = document.getElementById("explain-btn");
+            const reloadBtn = document.getElementById("reload-citation");
             const explanationContainer = document.getElementById("explanation-container");
             const explanationText = document.getElementById("explanation-text");
-            const loadingIndicator = document.getElementById("loading");
+            const reloadSpinner = document.getElementById("reload-spinner");
+            const explainSpinner = document.getElementById("explain-spinner");
 
+            // Fonction pour charger une nouvelle citation via AJAX
+            function loadNewCitation() {
+                reloadSpinner.classList.remove("d-none");  // Afficher le spinner de chargement
+                fetch("{{ path('random_citation') }}", {
+                    method: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mettre à jour le texte de la citation avec la nouvelle citation
+                        document.getElementById("citation-text").innerText = data.text;
+                        document.getElementById("citation-author").innerText = data.author;
+                        document.getElementById("citation-book").innerText = data.book;
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du rechargement de la citation:', error);
+                    })
+                    .finally(() => {
+                        reloadSpinner.classList.add("d-none");  // Cacher le spinner une fois le chargement terminé
+                    });
+            }
+
+            // Clic sur le bouton "Nouvelle citation"
+            if (reloadBtn) {
+                reloadBtn.addEventListener("click", function () {
+                    loadNewCitation();
+                });
+            }
+
+            // Bouton "Expliquer par l'IA"
             if (explainBtn) {
                 explainBtn.addEventListener("click", function () {
                     explanationContainer.classList.remove("d-none");
                     explanationText.innerHTML = "";
-                    loadingIndicator.classList.remove("d-none");
+                    explainSpinner.classList.remove("d-none"); // Afficher le spinner d'explication
 
                     fetch("{{ path('explain_citation') }}", {
                         method: "POST",
@@ -74,11 +111,11 @@
                     })
                         .then(response => response.json())
                         .then(data => {
-                            loadingIndicator.classList.add("d-none");
+                            explainSpinner.classList.add("d-none");  // Cacher le spinner une fois l'explication reçue
                             explanationText.innerHTML = data.explanation;
                         })
                         .catch(error => {
-                            loadingIndicator.classList.add("d-none");
+                            explainSpinner.classList.add("d-none");
                             explanationText.innerHTML = "❌ Une erreur est survenue.";
                         });
                 });
